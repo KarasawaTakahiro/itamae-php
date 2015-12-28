@@ -5,7 +5,14 @@ include_recipe "cookbooks/yum/default.rb"
 include_recipe "cookbooks/git/default.rb"
 include_recipe "cookbooks/redis/default.rb"
 include_recipe "cookbooks/memcached/default.rb"
-include_recipe "cookbooks/nginx/default.rb"
+
+case node[:httpd]
+  when "nginx"
+    include_recipe "cookbooks/nginx/default.rb"
+  when "apache"
+    include_recipe "cookbooks/apache/default.rb"
+end
+
 include_recipe "cookbooks/php/default.rb"
 
 case node[:env]

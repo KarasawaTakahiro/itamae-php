@@ -1,3 +1,7 @@
+# package "php*" do
+#   action :remove
+# end
+
 %w(
 php
 php-mbstring
@@ -14,13 +18,21 @@ php-pecl-redis
 php-pecl-memcached
 php-pecl-memcache ).each do |pkg|
   package pkg do
-    options "--enablerepo=remi-php56"
+    case node[:php][:version]
+      when "5.6"
+        options "--enablerepo=remi-php56"
+      when "5.5"
+        options "--enablerepo=remi-php55"
+    end
   end
 end
 
-service 'php-fpm' do
-  action [:enable, :start]
+if node[:httpd] == "nginx"
+  service 'php-fpm' do
+    action [:enable, :start]
+  end
 end
+
 
 template "/etc/php-fpm.d/www.conf" do
   source "./templates/etc/php-fpm.d/www.conf.erb"
