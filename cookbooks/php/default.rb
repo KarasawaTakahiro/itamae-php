@@ -10,7 +10,9 @@ php-opcache
 php-mcrypt
 php-pear
 php-pear-Cache-Lite
-php-pecl-redis ).each do |pkg|
+php-pecl-redis
+php-pecl-memcached
+php-pecl-memcache ).each do |pkg|
   package pkg do
     options "--enablerepo=remi-php56"
   end

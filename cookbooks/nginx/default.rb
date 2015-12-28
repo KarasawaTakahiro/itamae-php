@@ -9,11 +9,6 @@ template "/etc/nginx/nginx.conf" do
   source "./templates/etc/nginx/nginx.conf.erb"
 end
 
-execute "remove default conf files" do
-  user "root"
-  command "rm -rf /etc/nginx/conf.d/*.conf"
-end
-
 template "/etc/nginx/conf.d/virtual.conf" do
   owner "root"
   group "root"
