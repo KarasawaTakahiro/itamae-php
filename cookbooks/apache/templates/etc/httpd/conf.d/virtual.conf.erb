@@ -1,0 +1,70 @@
+<%
+   node[:apache][:ssl_key_dir] += "/" unless node[:apache][:ssl_key_dir] =~ %r#/\z#
+   node[:apache][:log_dir] += "/" unless node[:apache][:log_dir] =~ %r#/\z#
+%>
+NameVirtualHost *:80
+NameVirtualHost *:443
+
+<VirtualHost *:80>
+    ServerAdmin webmaster@<%= node[:apache][:hostname] %>
+    DocumentRoot "<%= node[:apache][:document_root] %>"
+    ServerName <%= node[:apache][:hostname] %>
+    ErrorLog "<%= node[:apache][:log_dir] %>error_log"
+    CustomLog "<%= node[:apache][:log_dir] %>access_log" common
+</VirtualHost>
+
+<VirtualHost *:443>
+    ServerAdmin webmaster@<%= node[:apache][:hostname] %>
+    DocumentRoot "<%= node[:apache][:document_root] %>"
+    ServerName <%= node[:apache][:hostname] %>
+    ErrorLog "<%= node[:apache][:log_dir] %>ssl_error_log"
+    CustomLog "<%= node[:apache][:log_dir] %>ssl_access_log" common
+    
+    SSLEngine on
+    SSLHonorCipherOrder ON
+    SSLCipherSuite EECDH+HIGH:EDH+HIGH:HIGH:MEDIUM:+3DES:!ADH:!RC4:!MD5:!aNULL:!eNULL:!SSLv2:!LOW:!EXP:!PSK:!SRP:!DSS:!KRB5
+    SSLCertificateFile "<%= node[:apache][:ssl_key_dir] %>server.crt"
+    SSLCertificateKeyFile "<%= node[:apache][:ssl_key_dir] %>server.key"
+    SSLCertificateChainFile "<%= node[:apache][:ssl_key_dir] %>server-ca.crt"
+</VirtualHost>
+
+<Directory "<%= node[:apache][:document_root] %>">
+    AllowOverride All
+    Options Indexes FollowSymLinks
+    Order allow,deny
+    Allow from all
+
+<% if node[:apache][:useBasicAuth] %>
+    AuthUserFile /etc/httpd/conf.d/.htpasswd
+    AuthGroupFile /dev/null
+    AuthName "Basic Auth"
+    AuthType Basic
+    Require valid-user
+<% end %>
+    
+    ExpiresActive On
+    ExpiresByType image/gif "access plus 7 days"
+    ExpiresByType image/jpeg "access plus 7 days"
+    ExpiresByType image/png "access plus 7 days"
+    ExpiresByType application/rss+xml "access plus 1 days"
+    ExpiresByType application/x-javascript "access plus 30 days"
+    ExpiresByType text/css "access plus 30 days"
+    ExpiresByType text/html "modification plus 15 minutes"
+    
+    SetOutputFilter DEFLATE
+    BrowserMatch ^Mozilla/4\.0[678] no-gzip
+    BrowserMatch ^Mozilla/4 gzip-only-text/html
+    BrowserMatch \bMSI[E] !no-gzip !gzip-only-text/html
+    SetEnvIfNoCase Request_URI \.(?:gif|jpe?g|png|ico)$ no-gzip dont-vary
+    SetEnvIfNoCase Request_URI _\.utxt$ no-gzip
+    AddOutputFilterByType DEFLATE text/plain
+    AddOutputFilterByType DEFLATE text/html
+    AddOutputFilterByType DEFLATE text/xml
+    AddOutputFilterByType DEFLATE text/css
+    AddOutputFilterByType DEFLATE application/xhtml+xml
+    AddOutputFilterByType DEFLATE application/xml
+    AddOutputFilterByType DEFLATE application/rss+xml
+    AddOutputFilterByType DEFLATE application/atom_xml
+    AddOutputFilterByType DEFLATE application/x-javascript
+    AddOutputFilterByType DEFLATE application/x-httpd-php
+</Directory>

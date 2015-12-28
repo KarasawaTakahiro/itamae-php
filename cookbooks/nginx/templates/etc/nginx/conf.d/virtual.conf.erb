@@ -1,3 +1,7 @@
+<%
+   node[:nginx][:log_dir] += "/" unless node[:nginx][:log_dir] =~ %r#/\z#
+%>
+
 server {
     listen 80;
     server_name  <%= node[:nginx][:hostname] %>;
